@@ -5,7 +5,7 @@ import android.content.Context
 import com.gdi.hahi.mvp.contract.HahiContract
 import com.gdi.hahi.mvp.model.LiveModel
 import com.gdi.hahi.mvp.model.bean.LiveData
-import com.gdi.hahi.network.Api
+import com.gdi.hahi.api.Api
 
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

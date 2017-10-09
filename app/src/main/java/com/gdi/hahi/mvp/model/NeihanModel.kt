@@ -1,16 +1,13 @@
 package com.gdi.hahi.mvp.model
 
 import android.content.Context
-import android.util.Log
 
 import com.gdi.hahi.mvp.contract.HahiContract
 import com.gdi.hahi.mvp.model.bean.DataN
 import com.gdi.hahi.mvp.model.bean.NeiHanData
 import com.gdi.hahi.mvp.model.bean.NeiHanBean
-import com.gdi.hahi.network.Api
-import com.gdi.hahi.network.RetrofitClient
-
-import java.util.ArrayList
+import com.gdi.hahi.api.Api
+import com.gdi.lazylibrary.network.RetrofitClient
 
 import io.reactivex.Observable
 
@@ -68,7 +65,7 @@ class NeihanModel(internal var content_type: String, internal var device_id: Str
 
 
     override fun loadData(context: Context, lastTime: Long): Observable<NeiHanBean> {
-        val retrofitClient = RetrofitClient.getInstance(context, Api.BaseUrl)
+        val retrofitClient = RetrofitClient.getInstance(context).baseUrl(Api.BaseUrl)
         val observable = retrofitClient.create<Api>(Api::class.java).getNeiHanData(content_type, device_id, lastTime, System.currentTimeMillis())
         return observable
     }

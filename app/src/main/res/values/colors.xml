@@ -4,5 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="live_bottom_bg">#00000000</color>
+    <color name="tabselectedtextcolor">#ffffff</color>
+    <color name="tabtextcolor">#ffffff</color>
+
 
 </resources>

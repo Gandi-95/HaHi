@@ -20,7 +20,7 @@ import kotlin.properties.Delegates
  * Created by gandi on 2017/9/9 0009.
  */
 
-class LiveGSYVideoPlayer : StandardGSYVideoPlayer {
+open class LiveGSYVideoPlayer : StandardGSYVideoPlayer {
 
     var mContext: Context by Delegates.notNull()
 
@@ -44,6 +44,7 @@ class LiveGSYVideoPlayer : StandardGSYVideoPlayer {
 
 
     fun setBottomProgressBarHide() {
+        this.removeView(mStartButton)
         visibility = View.INVISIBLE
         mBottomContainer.visibility = View.GONE
         mProgressBar.visibility = View.GONE
@@ -62,14 +63,16 @@ class LiveGSYVideoPlayer : StandardGSYVideoPlayer {
 
 
     fun start() {
-        startPlayLogic()
+        startButtonLogic()
+//        startPlayLogic()
     }
 
     fun pause() {
-        if (GSYVideoManager.instance().mediaPlayer.isPlaying) {
-            GSYVideoManager.instance().mediaPlayer.pause()
-            visibility = View.INVISIBLE
-        }
+//        if (GSYVideoManager.instance().mediaPlayer.isPlaying) {
+//            GSYVideoManager.instance().mediaPlayer.pause()
+//        }
+        onVideoPause()
+        visibility = View.INVISIBLE
     }
 
     fun stop() {

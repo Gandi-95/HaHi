@@ -1,6 +1,7 @@
 package com.gdi.hahi.ui.adapter
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -10,26 +11,32 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.gdi.hahi.R
 import com.gdi.hahi.callback.OnItemClickLitener
 import com.gdi.hahi.mvp.model.bean.NeiHanData
+import com.gdi.hahi.ui.activity.PhotoViewActivity
+import com.shuyu.gsyvideoplayer.utils.ListVideoUtil
+import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 
-import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard
 
 /**
  * Created by Administrator on 2017/8/2 0002.
  */
 
 class NeihanAdapter(internal var mContext: Context, internal var mList: List<NeiHanData>?) : RecyclerView.Adapter<NeihanAdapter.ViewHolder>() {
-    internal var mOnItemClickLitener: OnItemClickLitener? = null
-    internal var WindowWidth: Int = 0
+    private var mOnItemClickLitener: OnItemClickLitener? = null
+    private var WindowWidth: Int = 0
+    private var viewHolderList: MutableList<RecyclerView.ViewHolder>? = null
+
+    private var viewHolderMap: MutableMap<Int, ViewHolder>? = null
 
     init {
         val wm = mContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         WindowWidth = wm.defaultDisplay.width
+        viewHolderList = ArrayList()
+        viewHolderMap = HashMap()
     }
 
 
@@ -72,22 +79,37 @@ class NeihanAdapter(internal var mContext: Context, internal var mList: List<Nei
                 }
                 3 -> {
                     holder.rl_video.layoutParams = setHeight(holder.rl_video, bean.width, bean.hight)
-                    holder.gsy_player.layoutParams = setHeight(holder.gsy_player, bean.width, bean.hight)
                     holder.iv_img.visibility = View.GONE
                     holder.rl_video.visibility = View.VISIBLE
-                    //                    bean.setMeida_url("http://pull-flv-l1-hs.pstatp.com/hudong/stream-6463304935256951565.flv");
-                    holder.gsy_player.setUp(bean.meida_url, JCVideoPlayerStandard.SCREEN_LAYOUT_NORMAL)
+                    holder.gsy_player.setUp(bean.meida_url, false, null)
                     holder.gsy_player.backButton.visibility = View.GONE
-                    Glide.with(mContext).load(bean.thumbImage).apply(RequestOptions().centerCrop()).into(holder.gsy_player.thumbImageView)
+
+                    //添加视预览图
+                    var iv_thumb = ImageView(mContext)
+                    Glide.with(mContext).asDrawable().load(bean.thumbImage).apply(RequestOptions().centerCrop()).into(iv_thumb)
+                    holder.gsy_player.setThumbImageView(iv_thumb)
+
+                    //全屏
+                    holder.gsy_player.fullscreenButton.setOnClickListener {
+                        //第一个true是否需要隐藏actionbar，第二个true是否需要隐藏statusbar
+                        holder.gsy_player.startWindowFullscreen(mContext, true, true);
+                    }
+
                 }
             }
-
+            //查看大图
+            holder.iv_img.setOnClickListener {
+                val intent = PhotoViewActivity.newUrlIntent(mContext,bean.meida_url)
+                mContext.startActivity(intent)
+            }
 
             holder.itemView.setOnClickListener { view ->
                 if (mOnItemClickLitener != null) {
                     mOnItemClickLitener!!.setOnItemClickLitener(view, position)
                 }
             }
+
+            viewHolderMap?.let { viewHolderMap!!.put(position, holder) }
         }
     }
 
@@ -105,15 +127,21 @@ class NeihanAdapter(internal var mContext: Context, internal var mList: List<Nei
         return layoutParams
     }
 
+     fun getViewHolder(postion: Int): ViewHolder? {
+        if (viewHolderMap!!.get(postion)!==null){
+            return viewHolderMap!!.get(postion)
+        }
+        return null
+    }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        internal var iv_useravatar: ImageView
-        internal var tv_username: TextView
-        internal var tv_context: TextView
-        internal var iv_img: ImageView
-        internal var rl_video: RelativeLayout
-        internal var gsy_player: JCVideoPlayerStandard
+        var iv_useravatar: ImageView
+        var tv_username: TextView
+        var tv_context: TextView
+        var iv_img: ImageView
+        var rl_video: RelativeLayout
+        var gsy_player: StandardGSYVideoPlayer
 
         init {
             iv_useravatar = itemView.findViewById(R.id.iv_useravatar) as ImageView
@@ -121,7 +149,7 @@ class NeihanAdapter(internal var mContext: Context, internal var mList: List<Nei
             tv_context = itemView.findViewById(R.id.tv_context) as TextView
             iv_img = itemView.findViewById(R.id.iv_img) as ImageView
             rl_video = itemView.findViewById(R.id.rl_video) as RelativeLayout
-            gsy_player = itemView.findViewById(R.id.gsy_player) as JCVideoPlayerStandard
+            gsy_player = itemView.findViewById(R.id.gsy_player) as StandardGSYVideoPlayer
         }
     }
 

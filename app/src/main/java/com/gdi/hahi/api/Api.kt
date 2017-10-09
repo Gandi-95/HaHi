@@ -1,4 +1,4 @@
-package com.gdi.hahi.network
+package com.gdi.hahi.api
 
 import com.gdi.hahi.mvp.model.bean.LiveBean
 import com.gdi.hahi.mvp.model.bean.NeiHanBean

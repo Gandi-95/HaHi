@@ -19,6 +19,7 @@ import com.gdi.hahi.mvp.presenter.LivePresenter
 import com.gdi.hahi.ui.adapter.LiveAdapter
 import java.util.ArrayList
 import android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE
+import com.gdi.lazylibrary.ui.SRefreshRecyclerView
 import kotlin.properties.Delegates
 //import kotlinx.android.synthetic.main.fragment_live.*
 
@@ -26,109 +27,50 @@ import kotlin.properties.Delegates
  * Created by gandi on 2017/9/7 0007.
  */
 
-class LiveFragment : BaseFragment(), HahiContract.View<List<LiveData>> {
+class LiveFragment : BaseFragment(), HahiContract.View<List<LiveData>>, SRefreshRecyclerView.OnRefreshViewListener,SRefreshRecyclerView.OnScrollListener {
 
-    internal var mView: View? = null
-    internal var rv_live: RecyclerView by Delegates.notNull()
-    internal var sl_live:SwipeRefreshLayout by Delegates.notNull()
-    internal var adapter: LiveAdapter by Delegates.notNull()
+    internal var sr_recycler_live: SRefreshRecyclerView by Delegates.notNull()
+    internal var adapter: LiveAdapter ?=null
     internal var presenter: LivePresenter by Delegates.notNull()
     internal var mList: MutableList<LiveData> = ArrayList()
-    internal var isRefresh = true
     internal var lastTime: Long = -1
 
     internal var curItemPosition = 0
     internal var viewHolder: LiveAdapter.ViewHolder? = null
     internal var isHidden = true
 
-    internal val HANDLER_REFRESH_CLOSE = 1
-    internal val HANDLER_START_FRIST = 2
-    internal val HANDLER_CRAWLER_ERROR = 3
+    internal val HANDLER_START_FRIST = 1
 
 
     internal var mHandler: Handler = object : Handler() {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                HANDLER_REFRESH_CLOSE -> {
-                    if (sl_live.isRefreshing)
-                        sl_live.isRefreshing = false
-                }
                 HANDLER_START_FRIST -> {
-                    adapter!!.fristViewHolder?.let {
+                    adapter?.let {  adapter!!.fristViewHolder?.let {
                         viewHolder = adapter!!.fristViewHolder
                         if (!isHidden)
                             viewHolder!!.gsy_player.start()
-                    }
+                    } }
+
                 }
-                HANDLER_CRAWLER_ERROR -> this.sendEmptyMessage(HANDLER_REFRESH_CLOSE)
             }
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        if (mView == null) {
-            mView = inflater!!.inflate(R.layout.fragment_live, null)
-            init()
-        }
-        return mView
+    override fun getLayoutId(): Int {
+        return R.layout.fragment_live
     }
 
-    private fun init() {
+    override fun lazyLoad() {
         presenter = LivePresenter(this, activity)
 
-        rv_live = mView!!.findViewById(R.id.rv_live) as RecyclerView
-        sl_live = mView!!.findViewById(R.id.sl_live) as SwipeRefreshLayout
-        //        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        rv_live!!.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
-        rv_live!!.addItemDecoration(DividerItemDecoration(activity, DividerItemDecoration.VERTICAL))
+        sr_recycler_live = mView!!.findViewById(R.id.sr_recycler_view) as SRefreshRecyclerView
         adapter = LiveAdapter(activity, mList)
-        rv_live!!.adapter = adapter
-//        tb_title.text = resources.getString(R.string.title_live)
-
-        initListener()
+        sr_recycler_live.setRecyclerView(LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false),DividerItemDecoration(activity, DividerItemDecoration.VERTICAL),null,adapter)
+        sr_recycler_live.setOnRefreshListener(this)
+        sr_recycler_live.setOnScrollListener(this)
+        sr_recycler_live.setRefreshing(true)
         requestData()
-    }
-
-    private fun initListener() {
-        sl_live.setOnRefreshListener {
-            isRefresh = true
-            requestData()
-            mHandler.sendEmptyMessageDelayed(HANDLER_REFRESH_CLOSE, 6000)
-        }
-
-        rv_live!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                val layoutManager = recyclerView!!.layoutManager
-                // 只有LinearLayoutManager才有查找第一个和最后一个可见view位置的方法
-                if (layoutManager is LinearLayoutManager) {
-                    val lastItem = layoutManager.findLastVisibleItemPosition()
-                    val fristItem = layoutManager.findFirstVisibleItemPosition()
-                    Log.i(TAG, "onScrollStateChanged: lastItem:$lastItem  curItemPosition:$curItemPosition")
-
-                    if (curItemPosition != lastItem - 1 && newState == SCROLL_STATE_IDLE) {
-                        viewHolder?.let { viewHolder!!.gsy_player.pause() }
-
-                        val index = if (recyclerView.childCount == 2) 0 else 1
-                        val view = recyclerView.getChildAt(index)
-
-                        view?.let { viewHolder = recyclerView.getChildViewHolder(view) as LiveAdapter.ViewHolder }
-                        viewHolder!!.gsy_player.start()
-                        curItemPosition = lastItem - 1
-                    }
-                }
-
-            }
-
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (isSlideToBottom(recyclerView)) {
-                    isRefresh = false
-                    requestData()
-                }
-            }
-        })
-
     }
 
 
@@ -140,30 +82,60 @@ class LiveFragment : BaseFragment(), HahiContract.View<List<LiveData>> {
         lastTime = System.currentTimeMillis()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        mView?.let { (mView!!.parent as ViewGroup).removeView(mView) }
+    override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+        val layoutManager = recyclerView!!.layoutManager
+        // 只有LinearLayoutManager才有查找第一个和最后一个可见view位置的方法
+        if (layoutManager is LinearLayoutManager) {
+            val lastItem = layoutManager.findLastVisibleItemPosition()
+            val fristItem = layoutManager.findFirstVisibleItemPosition()
+            val fristcItem = layoutManager.findFirstCompletelyVisibleItemPosition()
+            val lastcItem = layoutManager.findLastCompletelyVisibleItemPosition()
+            Log.i(TAG, "onScrollStateChanged: lastItem:$lastItem  fristItem:$fristItem  fristcItem:$fristcItem  lastcItem:$lastcItem  ")
+
+            if (curItemPosition != lastItem - 1 && newState == SCROLL_STATE_IDLE) {
+                viewHolder?.let { viewHolder!!.gsy_player.pause() }
+
+                val index = if (recyclerView.childCount == 2) 0 else 1
+                val view = recyclerView.getChildAt(index)
+
+                view?.let { viewHolder = recyclerView.getChildViewHolder(view) as LiveAdapter.ViewHolder }
+                viewHolder!!.gsy_player.start()
+                curItemPosition = lastItem - 1
+            }
+        }
+    }
+
+    override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+
+    }
+
+    override fun onRefresh() {
+        requestData()
+    }
+
+    override fun onLoadMore() {
+        requestData()
     }
 
 
     override fun smoothScrollToPosition(postion: Int) {
-        rv_live.smoothScrollToPosition(postion)
+        sr_recycler_live.smoothScrollToPosition(postion)
     }
 
     override fun setData(data: List<LiveData>?) {
-        mHandler.sendEmptyMessage(HANDLER_REFRESH_CLOSE)
-        if (isRefresh) {
+        if (sr_recycler_live.refresh) {
             if (viewHolder != null)
                 viewHolder!!.gsy_player.pause()
             mList.clear()
             data?.let { mList.addAll(it) }
-            adapter.notifyDataSetChanged()
+            adapter!!.notifyDataSetChanged()
             mHandler.sendEmptyMessageDelayed(HANDLER_START_FRIST, 1000)
         } else {
             val start = mList.size
             data?.let { mList.addAll(it) }
-            adapter.notifyItemRangeInserted(start, mList.size - 1)
+            adapter!!.notifyItemRangeInserted(start, mList.size - 1)
         }
+        sr_recycler_live.onCloseRefresh()
 
     }
 
@@ -188,18 +160,5 @@ class LiveFragment : BaseFragment(), HahiContract.View<List<LiveData>> {
 
         private val TAG = "LiveFragment"
 
-        /**
-         * 是否滑动到底部
-
-         * @param recyclerView
-         * *
-         * @return
-         */
-        fun isSlideToBottom(recyclerView: RecyclerView?): Boolean {
-            if (recyclerView == null) return false
-            if (recyclerView.computeVerticalScrollExtent() + recyclerView.computeVerticalScrollOffset() >= recyclerView.computeVerticalScrollRange() - 200)
-                return true
-            return false
-        }
     }
 }

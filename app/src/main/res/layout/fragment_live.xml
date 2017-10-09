@@ -20,63 +20,29 @@
             app:layout_collapseMode="pin"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
                 <TextView
                     android:id="@+id/tb_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:text="直播"
                     android:layout_centerInParent="true"
-                    android:textStyle="bold"/>
+                    android:text="直播"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </RelativeLayout>
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/sl_live"
+    <com.gdi.lazylibrary.ui.SRefreshRecyclerView
+        android:id="@+id/sr_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_live"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <!--<TextView-->
-            <!--android:id="@+id/text"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:gravity="center"/>-->
-
-            <!--<android.support.design.widget.FloatingActionButton-->
-            <!--android:id="@+id/fabtn"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:src="@mipmap/icon_up"-->
-            <!--app:backgroundTint="@color/fragment_fab_color"-->
-            <!--android:clickable="true"-->
-            <!--android:layout_marginBottom="@dimen/fab_margin"-->
-            <!--android:layout_marginRight="@dimen/fab_margin"/>-->
-
-            <!--<TextView-->
-            <!--android:id="@+id/tv_classify"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:gravity="center"/>-->
-        </RelativeLayout>
-    </android.support.v4.widget.SwipeRefreshLayout>
 
 </android.support.design.widget.CoordinatorLayout>

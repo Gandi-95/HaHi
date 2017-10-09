@@ -3,15 +3,11 @@ package com.gdi.hahi.mvp.model
 import android.content.Context
 
 import com.gdi.hahi.mvp.contract.HahiContract
-import com.gdi.hahi.mvp.model.bean.DataL
 import com.gdi.hahi.mvp.model.bean.LData
 import com.gdi.hahi.mvp.model.bean.LiveBean
 import com.gdi.hahi.mvp.model.bean.LiveData
-import com.gdi.hahi.network.Api
-import com.gdi.hahi.network.RetrofitClient
-
-import java.util.ArrayList
-
+import com.gdi.hahi.api.Api
+import com.gdi.lazylibrary.network.RetrofitClient
 import io.reactivex.Observable
 
 /**
@@ -35,7 +31,8 @@ class LiveModel(internal var device_id: String) : HahiContract.Model<LiveBean, L
     }
 
     override fun loadData(context: Context, lastTime: Long): Observable<LiveBean> {
-        val retrofitClient = RetrofitClient.getInstance(context, Api.LiveBaseUrl)
+//        val retrofitClient = RetrofitClient.getInstance(context, Api.LiveBaseUrl)
+        val retrofitClient = RetrofitClient.getInstance(context).baseUrl(Api.LiveBaseUrl)
         val observable = retrofitClient.create<Api>(Api::class.java).getLiveData(device_id, 170, lastTime)
         return observable
     }

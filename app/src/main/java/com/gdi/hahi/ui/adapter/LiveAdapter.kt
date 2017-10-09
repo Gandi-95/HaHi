@@ -58,6 +58,7 @@ class LiveAdapter(internal var mContext: Context, internal var mList: List<LiveD
             Glide.with(mContext).load(bean.avatar_url).apply(RequestOptions().centerCrop()).into(holder.iv_img)
             holder.gsy_player.layoutParams = setHeight(holder.gsy_player, (WindowWidth - 50) / 3, WindowHeight / 3)
             holder.gsy_player.setUp(bean.rtmp_pull_url, false, null)
+            holder.gsy_player.pause()
 
 
             holder.itemView.setOnClickListener { view ->
@@ -66,7 +67,6 @@ class LiveAdapter(internal var mContext: Context, internal var mList: List<LiveD
                     mOnItemClickLitener!!.setOnItemClickLitener(view, position)
                 }
             }
-
 
             holder.gsy_player.setStandardVideoAllCallBack(object : LiveVideoAllCallBack() {
                 override fun onPrepared(url: String, vararg objects: Any) {

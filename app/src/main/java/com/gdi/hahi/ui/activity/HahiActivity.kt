@@ -13,8 +13,6 @@ import kotlinx.android.synthetic.main.activity_hahi.*
 
 class HahiActivity : AppCompatActivity() {
 
-
-
     private var fragments: Array<BaseFragment>? = null
     private var index: Int = 0
     private var currentTabIndex: Int = 0
@@ -33,6 +31,7 @@ class HahiActivity : AppCompatActivity() {
             trx.hide(fragments!![currentTabIndex])
             if (!fragments!![index].isAdded) {
                 trx.add(R.id.fragment_container, fragments!![index])
+                trx.hide(fragments!![index])
             }
             trx.show(fragments!![index]).commit()
         } else {
@@ -57,7 +56,7 @@ class HahiActivity : AppCompatActivity() {
         fragments = arrayOf(homeFragment, liveFragment, showFragment)
         // add and show first fragment
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, homeFragment)
-                .add(R.id.fragment_container, liveFragment).hide(liveFragment).show(homeFragment)
+                .add(R.id.fragment_container, liveFragment).hide(homeFragment).hide(liveFragment).show(homeFragment)
                 .commit()
 
     }

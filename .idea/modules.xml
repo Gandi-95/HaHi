@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HaHi.iml" filepath="$PROJECT_DIR$/HaHi.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lazylibrary/lazylibrary.iml" filepath="$PROJECT_DIR$/lazylibrary/lazylibrary.iml" />
     </modules>
   </component>
 </project>
